@@ -1,9 +1,6 @@
 // Place all the styles related to the Products controller here.
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: https://sass-lang.com/
-.products {
-  margin: 0;
-  padding: 0.5em;
   a {
     padding: 0.354em 0.5em;
     border-radius: 0.354em;
@@ -17,7 +14,11 @@
   }
 
   tr.list_line_odd {
-    background-color: #effeef;
+    background-color: #d4f4d4;
+  }
+
+  tr.list_line_even {
+    background-color: #f7f7f7;;
   }
 
   td.image {
@@ -56,4 +57,3 @@
       padding: 0.5em 0;
     }
   }
-}
