@@ -2,6 +2,7 @@ class LineItemsController < ApplicationController
   include CurrentCart
   before_action :set_line_item, only: %i[ show edit update destroy ]
   before_action :set_cart, only: [:create]
+  # rescue_from ActiveRecord::RecordInvalid, with: :invalid_quantity
 
   # GET /line_items or /line_items.json
   def index
@@ -24,11 +25,11 @@ class LineItemsController < ApplicationController
   # POST /line_items or /line_items.json
   def create
     product = Product.find(params[:product_id])
-    @line_item = @cart.line_items.build(product: product)
+    @line_item = @cart.add_product(product)
 
     respond_to do |format|
       if @line_item.save
-        format.html { redirect_to cart_url(@cart), notice: "Line item was successfully created." }
+        format.html { redirect_to @line_item.cart, notice: "Line item was successfully created." }
         format.json { render :show, status: :created, location: @line_item }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -60,6 +61,32 @@ class LineItemsController < ApplicationController
     end
   end
 
+  def add
+    @line_item = LineItem.find(params[:line_item_id])
+    respond_to do |format|
+      if @line_item.add_quantity
+        format.html { redirect_to @line_item.cart, notice: "Line item was successfully created." }
+      else
+        format.html { redirect_to store_index_url, notice: "Failed Addition to cart." }
+      end
+    end
+  end
+
+  def remove
+    @line_item = LineItem.find(params[:line_item_id])
+    puts "QUANTITY FROM CONTROLLER =============== #{@line_item.quantity}"
+    # puts  "QQQQQQQQQ ===========> #{quantity}"
+    respond_to do |format|
+      if @line_item.remove_quantity
+        format.html { redirect_to @line_item.cart, notice: "Line item was successfully removed." }
+      else
+        format.html { redirect_to store_index_url, notice: "Failed Addition to cart." }
+      end
+    end
+  end
+
+  
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_line_item
@@ -70,4 +97,5 @@ class LineItemsController < ApplicationController
     def line_item_params
       params.require(:line_item).permit(:product_id, :cart_id)
     end
+
 end

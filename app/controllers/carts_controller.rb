@@ -1,5 +1,7 @@
 class CartsController < ApplicationController
   before_action :set_cart, only: %i[ show edit update destroy ]
+  before_action :check_cart_and_redirect, only: [:show]
+  rescue_from ActiveRecord::RecordNotFound, with: :invalid_cart
 
   # GET /carts or /carts.json
   def index
@@ -7,8 +9,7 @@ class CartsController < ApplicationController
   end
 
   # GET /carts/1 or /carts/1.json
-  def show
-  end
+  def show;end
 
   # GET /carts/new
   def new
@@ -22,7 +23,6 @@ class CartsController < ApplicationController
   # POST /carts or /carts.json
   def create
     @cart = Cart.new(cart_params)
-
     respond_to do |format|
       if @cart.save
         format.html { redirect_to cart_url(@cart), notice: "Cart was successfully created." }
@@ -49,10 +49,10 @@ class CartsController < ApplicationController
 
   # DELETE /carts/1 or /carts/1.json
   def destroy
-    @cart.destroy
-
+    @cart.destroy if @cart.id == session[:cart_id]
+    session[:cart_id] = nil
     respond_to do |format|
-      format.html { redirect_to carts_url, notice: "Cart was successfully destroyed." }
+      format.html { redirect_to store_index_url, notice: "Your cart is now empty." }
       format.json { head :no_content }
     end
   end
@@ -67,4 +67,16 @@ class CartsController < ApplicationController
     def cart_params
       params.fetch(:cart, {})
     end
+
+    def invalid_cart
+      logger.error "Attempt to access invalid cart #{params[:id]}" 
+      redirect_to store_index_url, notice: 'Invalid cart'
+    end
+
+    def check_cart_and_redirect
+      if @cart.line_items.count == 0
+        session[:cart_id] = nil
+        redirect_to store_index_url, notice: "Your cart is now empty."
+      end
+    end 
 end
